@@ -62,10 +62,6 @@ public class Task {
         return taskId;
     }
 
-    public TaskStatuses getStatus() {
-        return status;
-    }
-
     public void setStatus(TaskStatuses status) {
         this.status = status;
     }
