@@ -1,4 +1,5 @@
 package services;
+
 import tasks.*;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ class TaskManager {
 
     TaskManager() {
         count = 0;
-        tasksStorage= new HashMap<>();
+        tasksStorage = new HashMap<>();
         HashMap<Integer, Object> tasks = new HashMap<>();
         HashMap<Integer, Object> epics = new HashMap<>();
         HashMap<Integer, Object> subtasks = new HashMap<>();
@@ -21,19 +22,19 @@ class TaskManager {
     }
 
     int setID() {
-       return count++;
+        return count++;
     }
 
     ArrayList<Object> getAllTasks() {
         ArrayList<Object> allTasks = new ArrayList<>();
-        for (HashMap<Integer, Object> tasks: tasksStorage.values()) {
+        for (HashMap<Integer, Object> tasks : tasksStorage.values()) {
             allTasks.addAll(tasks.values());
         }
         return allTasks;
     }
 
     HashMap<TypesOfTasks, HashMap<Integer, Object>> deleteAllTasks() {
-        for (TypesOfTasks type: tasksStorage.keySet()) {
+        for (TypesOfTasks type : tasksStorage.keySet()) {
             tasksStorage.get(type).clear();
         }
         return tasksStorage;
@@ -41,8 +42,8 @@ class TaskManager {
 
     Object findTaskById(int idNumber) {
         Object result = null;
-        for (HashMap<Integer, Object> tasks: tasksStorage.values()) {
-            for (int num: tasks.keySet()) {
+        for (HashMap<Integer, Object> tasks : tasksStorage.values()) {
+            for (int num : tasks.keySet()) {
                 if (num == idNumber) {
                     result = tasks.get(idNumber);
                     break;
@@ -54,7 +55,7 @@ class TaskManager {
 
     ArrayList<SubTask> findSubtasksOfEpic(int epicId) {
         ArrayList<SubTask> subtasksOfEpic = new ArrayList<>();
-        for (Object object: tasksStorage.get(TypesOfTasks.SUBTASK).values()) {
+        for (Object object : tasksStorage.get(TypesOfTasks.SUBTASK).values()) {
             if (((SubTask) object).getIdOfEpic() == epicId) {
                 SubTask task = (SubTask) object;
                 subtasksOfEpic.add(task);
@@ -66,7 +67,7 @@ class TaskManager {
     void deleteSubtasksOfEpic(int epicId) {
         HashMap<Integer, Object> subtasks = tasksStorage.get(TypesOfTasks.SUBTASK);
         ArrayList<Integer> numberOfTasks = new ArrayList<>();
-        for (int i: subtasks.keySet()){
+        for (int i : subtasks.keySet()) {
             SubTask task = (SubTask) subtasks.get(i);
             if (task.getIdOfEpic() == epicId) {
                 numberOfTasks.add(i);
@@ -117,8 +118,8 @@ class TaskManager {
 
     HashMap<TypesOfTasks, HashMap<Integer, Object>> updateTask(Task task) {
         if (task != null && tasksStorage.get(TypesOfTasks.TASK).containsKey(task.getTaskId())) {
-                    tasksStorage.get(TypesOfTasks.TASK).put(task.getTaskId(), task);
-                }
+            tasksStorage.get(TypesOfTasks.TASK).put(task.getTaskId(), task);
+        }
         return tasksStorage;
     }
 

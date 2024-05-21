@@ -10,19 +10,13 @@ public class Epic extends Task {
         this.taskId = taskId;
     }
 
-    /*public Epic(String taskName, String taskDescription, int taskId) {
-        this.taskName = taskName;
-        this.taskDescription = taskDescription;
-        this.taskId = taskId;
-    }*/
-
     public TaskStatuses checkStatus(ArrayList<SubTask> subtasks) {
         int countNew = 0;
         int countDone = 0;
         if (subtasks.isEmpty()) {
             return TaskStatuses.NEW;
         }
-        for (SubTask task: subtasks) {
+        for (SubTask task : subtasks) {
             if (task.status == TaskStatuses.NEW) {
                 countNew++;
             } else if (task.status == TaskStatuses.DONE) {

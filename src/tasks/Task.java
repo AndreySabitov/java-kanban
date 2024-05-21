@@ -11,19 +11,12 @@ public class Task {
     public Task() {
     }
 
-    public Task(String taskName, String taskDescription,int taskId, TaskStatuses status) {
+    public Task(String taskName, String taskDescription, int taskId, TaskStatuses status) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.taskId = taskId;
         this.status = status;
     }
-
-     /*public Task(String taskName, String taskDescription, int taskId, TaskStatuses status) {
-        this.taskName = taskName;
-        this.taskDescription = taskDescription;
-        this.taskId = taskId;
-        this.status = status;
-    } */
 
     @Override
     public boolean equals(Object o) {
@@ -60,7 +53,7 @@ public class Task {
         if (taskDescription != null) {
             result = result + ", taskDescription.length='" + taskDescription.length() + "'";
         }
-               return result = result + ", taskId=" + taskId +
+        return result = result + ", taskId=" + taskId +
                 ", status=" + status +
                 '}';
     }
