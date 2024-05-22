@@ -1,12 +1,21 @@
 package tasks;
 
-public class SubTask extends Task {
-    int idOfEpic;
+public class Subtask extends Task {
+    private final int idOfEpic;
 
-    public SubTask(String taskName, String taskDescription, int taskId, TaskStatuses status, int idOfEpic) {
-        super(taskName, taskDescription, taskId, status);
+    public Subtask(int idOfEpic, String taskName, String taskDescription, TaskStatuses status) {
+        super(taskName, taskDescription, status);
         this.idOfEpic = idOfEpic;
     }
+
+    public Subtask(int idOfEpic, int taskId, String taskName, String taskDescription, TaskStatuses status) {
+        this.idOfEpic = idOfEpic;
+        this.taskId = taskId;
+        this.taskName = taskName;
+        this.taskDescription = taskDescription;
+        this.status = status;
+    }
+
 
     @Override
     public String toString() {

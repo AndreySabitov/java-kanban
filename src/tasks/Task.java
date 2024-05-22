@@ -3,18 +3,24 @@ package tasks;
 import java.util.Objects;
 
 public class Task {
+    protected int taskId;
     protected String taskName;
     protected String taskDescription;
-    protected int taskId;
     protected TaskStatuses status;
 
     public Task() {
     }
 
-    public Task(String taskName, String taskDescription, int taskId, TaskStatuses status) {
+    public Task(String taskName, String taskDescription, TaskStatuses status) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
+        this.status = status;
+    }
+
+    public Task(int taskId, String taskName, String taskDescription, TaskStatuses status) {
         this.taskId = taskId;
+        this.taskName = taskName;
+        this.taskDescription = taskDescription;
         this.status = status;
     }
 
@@ -58,8 +64,32 @@ public class Task {
                 '}';
     }
 
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public String getTaskDescription() {
+        return taskDescription;
+    }
+
+    public void setTaskDescription(String taskDescription) {
+        this.taskDescription = taskDescription;
+    }
+
     public int getTaskId() {
         return taskId;
+    }
+
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+    }
+
+    public TaskStatuses getStatus() {
+        return status;
     }
 
     public void setStatus(TaskStatuses status) {
