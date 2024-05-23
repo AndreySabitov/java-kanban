@@ -8,7 +8,7 @@ public class Subtask extends Task {
         this.idOfEpic = idOfEpic;
     }
 
-    public Subtask(int idOfEpic, int taskId, String taskName, String taskDescription, TaskStatuses status) {
+    public Subtask(int idOfEpic, Integer taskId, String taskName, String taskDescription, TaskStatuses status) {
         this.idOfEpic = idOfEpic;
         this.taskId = taskId;
         this.taskName = taskName;

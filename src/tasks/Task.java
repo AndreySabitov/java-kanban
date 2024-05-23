@@ -3,7 +3,7 @@ package tasks;
 import java.util.Objects;
 
 public class Task {
-    protected int taskId;
+    protected Integer taskId;
     protected String taskName;
     protected String taskDescription;
     protected TaskStatuses status;
@@ -17,7 +17,7 @@ public class Task {
         this.status = status;
     }
 
-    public Task(int taskId, String taskName, String taskDescription, TaskStatuses status) {
+    public Task(Integer taskId, String taskName, String taskDescription, TaskStatuses status) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.taskDescription = taskDescription;
@@ -29,7 +29,7 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return taskId == task.taskId &&
+        return Objects.equals(taskId, task.taskId) &&
                 Objects.equals(taskName, task.taskName) &&
                 Objects.equals(taskDescription, task.taskDescription) &&
                 status == task.status;
@@ -80,11 +80,11 @@ public class Task {
         this.taskDescription = taskDescription;
     }
 
-    public int getTaskId() {
+    public Integer getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(Integer taskId) {
         this.taskId = taskId;
     }
 

@@ -13,7 +13,6 @@ public class Main {
     }
 
     private static void myTest(TaskManager taskManager) {
-        System.out.println("Шаг 1: создаю 2 задачи, Эпик с 2мя подзадачами и эпик с одной подзадачей");
 
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW);
@@ -22,7 +21,7 @@ public class Main {
 
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
-        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
+        Subtask subtask1 = new Subtask(10, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);
@@ -41,6 +40,10 @@ public class Main {
         System.out.println(taskManager.getEpicsList());
         System.out.println(taskManager.getSubtasksList());
 
+        System.out.println(taskManager.getTask(task1Id));
+        System.out.println(taskManager.getSubTask(subtask1Id));
+        System.out.println(taskManager.getEpic(epic2Id));
+
         taskManager.updateTask(new Task(task2Id, "Обновленная задача 2",
                 "новое описание задачи 2", TaskStatuses.IN_PROGRESS));
         taskManager.updateSubtask(new Subtask(epic1Id, subtask2Id, "обновленная подзадача 2",
@@ -52,11 +55,14 @@ public class Main {
         taskManager.updateSubtask(new Subtask(epic2Id, subtask3Id, "обновленная подзадача 3",
                 "Описание подзадачи 3", TaskStatuses.DONE));
 
+        System.out.println(taskManager.getEpicSubtasks(epic1Id));
+
         taskManager.deleteEpic(epic2Id);
         taskManager.deleteTask(task1Id);
-        taskManager.deleteSubtask(subtask2Id);
+        taskManager.deleteSubtask(subtask1Id);
         taskManager.deleteSubtasks();
         taskManager.deleteEpics();
+        taskManager.deleteTasks();
     }
 }
 
