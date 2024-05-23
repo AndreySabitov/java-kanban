@@ -33,28 +33,23 @@ public class TaskManager {
             return null;
         }
         Epic epic = epics.get(epicId);
-        ArrayList<Integer> subtasksOfEpicIds = epic.getSubtaskIds();
         ArrayList<Subtask> subtasksOfEpic = new ArrayList<>();
-        for (Integer id : subtasksOfEpicIds) {
+        for (Integer id : epic.getSubtaskIds()) {
             subtasksOfEpic.add(subtasks.get(id));
         }
         return subtasksOfEpic;
     }
 
     public Task getTask(int id) {
-        return tasks.getOrDefault(id, null);
+        return tasks.get(id);
     }
 
-    public Subtask getSubTask(Integer id) {
-        if (id != null) {
-            return subtasks.get(id);
-        } else {
-            return null;
-        }
+    public Subtask getSubTask(int id) {
+        return subtasks.get(id);
     }
 
     public Epic getEpic(int id) {
-        return epics.getOrDefault(id, null);
+        return epics.get(id);
     }
 
     public int addNewTask(Task task) {
@@ -67,12 +62,13 @@ public class TaskManager {
     public int addNewEpic(Epic epic) {
         Integer id = setId();
         epic.setTaskId(id);
+        epic.cleanSubtaskIds();
         epic.setStatus(checkStatus(epic.getSubtaskIds()));
         epics.put(id, epic);
         return id;
     }
 
-    public TaskStatuses checkStatus(ArrayList<Integer> subtasksIds) {
+    private TaskStatuses checkStatus(ArrayList<Integer> subtasksIds) {
         int countNew = 0;
         int countDone = 0;
         ArrayList<Subtask> subtasksOfEpic = new ArrayList<>();
@@ -170,7 +166,7 @@ public class TaskManager {
     public void deleteSubtasks() {
         subtasks.clear();
         for (Epic epic : epics.values()) {
-            epic.getSubtaskIds().clear();
+            epic.cleanSubtaskIds();
             epic.setStatus(checkStatus(epic.getSubtaskIds()));
         }
     }
@@ -178,17 +174,5 @@ public class TaskManager {
     public void deleteEpics() {
         subtasks.clear();
         epics.clear();
-    }
-
-    public HashMap<Integer, Task> getTasks() {
-        return tasks;
-    }
-
-    public HashMap<Integer, Epic> getEpics() {
-        return epics;
-    }
-
-    public HashMap<Integer, Subtask> getSubtasks() {
-        return subtasks;
     }
 }

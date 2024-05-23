@@ -21,7 +21,7 @@ public class Main {
 
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
-        Subtask subtask1 = new Subtask(10, "подзадача 1", "описание подзадачи 1",
+        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);

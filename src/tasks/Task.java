@@ -52,17 +52,6 @@ public class Task {
         return hash + taskId;
     }
 
-    @Override
-    public String toString() {
-        String result = "Task{" +
-                "taskName='" + taskName + "'";
-        if (taskDescription != null) {
-            result = result + ", taskDescription.length='" + taskDescription.length() + "'";
-        }
-        return result = result + ", taskId=" + taskId +
-                ", status=" + status +
-                '}';
-    }
 
     public String getTaskName() {
         return taskName;
@@ -94,5 +83,15 @@ public class Task {
 
     public void setStatus(TaskStatuses status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "taskId=" + taskId +
+                ", taskName='" + taskName + '\'' +
+                ", taskDescription='" + taskDescription + '\'' +
+                ", status=" + status +
+                '}';
     }
 }

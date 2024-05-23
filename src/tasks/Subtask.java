@@ -16,21 +16,18 @@ public class Subtask extends Task {
         this.status = status;
     }
 
+    public int getIdOfEpic() {
+        return idOfEpic;
+    }
 
     @Override
     public String toString() {
-        String result = "SubTask{" +
+        return "Subtask{" +
                 "idOfEpic=" + idOfEpic +
-                ", taskName='" + taskName + "'";
-        if (taskDescription != null) {
-            result = result + ", taskDescription.length='" + taskDescription.length() + "'";
-        }
-        return result = result + ", taskId=" + taskId +
+                ", taskId=" + taskId +
+                ", taskName='" + taskName + '\'' +
+                ", taskDescription='" + taskDescription + '\'' +
                 ", status=" + status +
                 '}';
-    }
-
-    public int getIdOfEpic() {
-        return idOfEpic;
     }
 }
