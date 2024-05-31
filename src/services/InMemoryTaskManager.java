@@ -111,7 +111,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Integer addNewSubtask(Subtask subtask) {
-        if (epics.containsKey(subtask.getIdOfEpic())) {
+        if (epics.containsKey(subtask.getIdOfEpic()) && !epics.containsKey(subtask.getTaskId())) {
             int id = setId();
             subtask.setTaskId(id);
             subtasks.put(id, subtask);

@@ -3,9 +3,6 @@ package services;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TaskStatuses;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
@@ -49,5 +46,5 @@ public interface TaskManager {
 
     void deleteEpics();
 
-    public List<Task> getHistory();
+    List<Task> getHistory();
 }
