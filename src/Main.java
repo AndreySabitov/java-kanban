@@ -51,28 +51,6 @@ public class Main {
         taskManager.updateEpic(new Epic(epic2Id, "Эпик2new", "Новое описание эпика 2"));
         taskManager.updateSubtask(new Subtask(epic2Id, subtask3Id, "обновленная подзадача 3",
                 "Описание подзадачи 3", TaskStatuses.DONE));
-
-        System.out.println("Задачи:");
-        for (Task task : taskManager.getTasksList()) {
-            System.out.println(task);
-        }
-        System.out.println("Эпики:");
-        for (Task epic : taskManager.getEpicsList()) {
-            System.out.println(epic);
-
-            for (Task task : taskManager.getEpicSubtasks(epic.getTaskId())) {
-                System.out.println("--> " + task);
-            }
-        }
-        System.out.println("Подзадачи:");
-        for (Task subtask : taskManager.getSubtasksList()) {
-            System.out.println(subtask);
-        }
-
-        System.out.println("История:");
-        for (Task task : taskManager.getHistory()) {
-            System.out.println(task);
-        }
     }
 }
 
