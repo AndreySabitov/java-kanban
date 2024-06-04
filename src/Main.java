@@ -9,8 +9,7 @@ import tasks.Task;
 public class Main {
 
     public static void main(String[] args) {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
 
         myTest(taskManager);
     }

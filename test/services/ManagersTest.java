@@ -6,14 +6,13 @@ import org.junit.jupiter.api.Test;
 
 class ManagersTest {
     @Test
-    public void createNewTaskManager() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+    void createNewTaskManager() {
+        TaskManager taskManager = Managers.getDefault();
         assertNotNull(taskManager);
     }
 
     @Test
-    public void createNewHistoryManager() {
+    void createNewHistoryManager() {
         HistoryManager historyManager = Managers.getDefaultHistory();
         assertNotNull(historyManager);
     }

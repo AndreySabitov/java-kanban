@@ -13,15 +13,14 @@ import java.util.List;
 class InMemoryTaskManagerTest {
     @Test
     void managerCanGetListsOfAllTasks() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         List<Task> tasks = taskManager.getTasksList();
         assertFalse(tasks.isEmpty());
         List<Epic> epics = taskManager.getEpicsList();
@@ -32,66 +31,59 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanGetEpicSubtasks() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        Integer subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
         List<Subtask> subtasks = taskManager.getEpicSubtasks(epic1Id);
         assertFalse(subtasks.isEmpty());
     }
 
     @Test
     void cantGetSubtasksOfNonExistentEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         List<Subtask> subtasks = taskManager.getEpicSubtasks(1);
         assertNull(subtasks);
     }
 
     @Test
     void returnNullIfTryAddSubtaskToNonExistentEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Subtask subtask1 = new Subtask(1, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        assertNull(subtask1Id);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        assertEquals(-1, subtask1Id);
     }
 
     @Test
     void cantGetNonExistentTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         assertNull(taskManager.getTask(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
     @Test
     void cantGetNonExistentSubtask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         assertNull(taskManager.getSubTask(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
     @Test
     void cantGetNonExistentEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         assertNull(taskManager.getEpic(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
     @Test
     void cantUpdateNonExistentTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         taskManager.updateTask(new Task(1, "Обновленная задача 2",
                 "новое описание задачи 2", TaskStatuses.IN_PROGRESS));
         assertNull(taskManager.getTask(1));
@@ -99,16 +91,14 @@ class InMemoryTaskManagerTest {
 
     @Test
     void cantUpdateNonExistentEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         taskManager.updateEpic(new Epic(1, "Эпик2new", "Новое описание эпика 2"));
         assertNull(taskManager.getEpic(1));
     }
 
     @Test
     void cantUpdateNonExistentSubtask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         taskManager.updateSubtask(new Subtask(epic1Id, 3, "обновленная подзадача 2",
@@ -118,16 +108,15 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkAutoChangeStatusOfEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        Integer subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
         taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "обновленная подзадача 1",
                 "Новое описание подзадачи 1", TaskStatuses.DONE));
         assertEquals(TaskStatuses.IN_PROGRESS, taskManager.getEpic(epic1Id).getStatus());
@@ -138,24 +127,22 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkNewEpicAlwaysHasStatusNew() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.IN_PROGRESS);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.DONE);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        Integer subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
         int epic2Id = taskManager.addNewEpic(taskManager.getEpic(epic1Id));
         assertEquals(TaskStatuses.NEW, taskManager.getEpic(epic2Id).getStatus());
     }
 
     @Test
     void checkManagerCanUpdateTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.updateTask(new Task(task1Id, "Задача 1",
@@ -166,8 +153,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanUpdateEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         String oldName = epic1.getTaskName();
         String oldDescription = epic1.getTaskDescription();
@@ -179,13 +165,12 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanUpdateSubtask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "подзадача 1",
                 "Новое описание подзадачи 1", TaskStatuses.NEW));
         Subtask subtask = taskManager.getSubTask(subtask1Id);
@@ -194,8 +179,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void tasksWithSameIdIsSame() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         assertEquals(taskManager.getTask(task1Id), taskManager.getTask(task1Id));
@@ -203,8 +187,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void epicsWithSameIdIsSame() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         assertEquals(taskManager.getEpic(epic1Id), taskManager.getEpic(epic1Id));
@@ -212,47 +195,43 @@ class InMemoryTaskManagerTest {
 
     @Test
     void subtasksWithSameIdIsSame() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         assertEquals(taskManager.getSubTask(subtask1Id), taskManager.getSubTask(subtask1Id));
     }
 
     @Test
     void cantMakeEpicYourOwnSubtask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask = new Subtask(epic1Id, epic1Id, "эпик подзадача",
                 "пытаюсь сделать эпик подзадачей", TaskStatuses.NEW);
-        Integer subtaskEpicId = taskManager.addNewSubtask(subtask);
-        assertNull(subtaskEpicId);
+        int subtaskEpicId = taskManager.addNewSubtask(subtask);
+        assertEquals(-1, subtaskEpicId);
     }
 
     @Test
     void cantMakeSubtaskYourOwnEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         Subtask subtaskOfSubtask = new Subtask(subtask1Id, "подзадача - Эпик",
                 "хочу сделать подзадачу своим эпиком", TaskStatuses.NEW);
-        Integer epicSubtaskId = taskManager.addNewSubtask(subtaskOfSubtask);
-        assertNull(epicSubtaskId);
+        int epicSubtaskId = taskManager.addNewSubtask(subtaskOfSubtask);
+        assertEquals(-1, epicSubtaskId);
     }
 
     @Test
     void checkManagerCanCreateTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         assertNotNull(taskManager.getTask(task1Id));
@@ -260,8 +239,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanDeleteTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.deleteTask(task1Id);
@@ -270,8 +248,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanCreateEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         assertNotNull(taskManager.getEpic(epic1Id));
@@ -279,13 +256,12 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanDeleteEpicAndItsSubtasks() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteEpic(epic1Id);
         assertNull(taskManager.getSubTask(subtask1Id));
         assertNull(taskManager.getEpic(epic1Id));
@@ -293,25 +269,23 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanCreateSubtask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         assertNotNull(taskManager.getSubTask(subtask1Id));
     }
 
     @Test
     void checkManagerCanDeleteSubtaskAndItsIdDeleteFromItsEpic() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteSubtask(subtask1Id);
         assertNull(taskManager.getSubTask(subtask1Id));
         assertTrue(taskManager.getEpic(epic1Id).getSubtaskIds().isEmpty());
@@ -319,8 +293,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void CheckManagerCanDeleteAllTasks() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         Task task2 = new Task("Задача 2", "Простая задача 2", TaskStatuses.NEW);
@@ -331,8 +304,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanDeleteAllEpics() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
@@ -345,8 +317,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkManagerCanDeleteAllSubtasks() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
@@ -357,8 +328,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkNoConflictBetweenTasksWithGeneratedIdAndWithGivenId() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         Task task2 = new Task(task1Id, "задача 2", "задача 2 с таким же id", TaskStatuses.NEW);
@@ -368,8 +338,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkTaskNotChangeWhenAddedToManager() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         assertEquals(task1, taskManager.getTask(task1Id));
@@ -377,8 +346,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkHistoryManagerSavePreviousVersionOfTask() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
@@ -390,8 +358,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkAddTaskToHistory() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
@@ -401,8 +368,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void checkMaxSizeOfHistoryIs10() {
-        Managers managers = new Managers();
-        TaskManager taskManager = managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
         Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW);
         int task1Id = taskManager.addNewTask(task1);
@@ -414,14 +380,14 @@ class InMemoryTaskManagerTest {
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        Integer subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
 
         Epic epic2 = new Epic("Эпик 2", "Простой эпик 2");
         int epic2Id = taskManager.addNewEpic(epic2);
         Subtask subtask3 = new Subtask(epic2Id, "подзадача 3", "простая подзадача 3",
                 TaskStatuses.NEW);
-        Integer subtask3Id = taskManager.addNewSubtask(subtask3);
+        int subtask3Id = taskManager.addNewSubtask(subtask3);
 
         int epic3Id = taskManager.addNewEpic(new Epic("Эпик 3", "пустой эпик 3"));
         taskManager.getTask(task1Id);

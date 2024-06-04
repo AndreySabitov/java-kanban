@@ -7,8 +7,6 @@ import tasks.Task;
 import java.util.List;
 
 public interface TaskManager {
-    Integer setId();
-
     List<Task> getTasksList();
 
     List<Epic> getEpicsList();
@@ -27,7 +25,7 @@ public interface TaskManager {
 
     int addNewEpic(Epic epic);
 
-    Integer addNewSubtask(Subtask subtask);
+    int addNewSubtask(Subtask subtask);
 
     void updateTask(Task task);
 

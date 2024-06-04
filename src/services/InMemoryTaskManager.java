@@ -10,11 +10,10 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private final HistoryManager searchHistory = Managers.getDefaultHistory();
+    private final HistoryManager historyManager = Managers.getDefaultHistory();
     private Integer count = 0;
 
-    @Override
-    public Integer setId() {
+    private Integer setId() {
         return count++;
     }
 
@@ -48,29 +47,23 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        if (tasks.containsKey(id)) {
-            searchHistory.add(tasks.get(id));
-            return tasks.get(id);
-        }
-        return null;
+        Task task = tasks.get(id);
+        historyManager.add(task);
+        return task;
     }
 
     @Override
     public Subtask getSubTask(int id) {
-        if (subtasks.containsKey(id)) {
-            searchHistory.add(subtasks.get(id));
-            return subtasks.get(id);
-        }
-        return null;
+        Subtask subtask = subtasks.get(id);
+        historyManager.add(subtask);
+        return subtask;
     }
 
     @Override
     public Epic getEpic(int id) {
-        if (epics.containsKey(id)) {
-            searchHistory.add(epics.get(id));
-            return epics.get(id);
-        }
-        return null;
+        Epic epic = epics.get(id);
+        historyManager.add(epic);
+        return epic;
     }
 
     @Override
@@ -119,7 +112,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Integer addNewSubtask(Subtask subtask) {
+    public int addNewSubtask(Subtask subtask) {
         if (epics.containsKey(subtask.getIdOfEpic()) && !epics.containsKey(subtask.getTaskId())) {
             int id = setId();
             subtask.setTaskId(id);
@@ -129,7 +122,7 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(checkStatus(epic.getSubtaskIds()));
             return id;
         } else {
-            return null;
+            return -1;
         }
     }
 
@@ -182,9 +175,9 @@ public class InMemoryTaskManager implements TaskManager {
             Subtask subtask = subtasks.get(id);
             int idOfEpic = subtask.getIdOfEpic();
             Epic epic = epics.get(idOfEpic);
-            ArrayList<Integer> subtasksOFEpicIds = epic.getSubtaskIds();
-            subtasksOFEpicIds.remove(id);
-            epic.setStatus(checkStatus(subtasksOFEpicIds));
+            ArrayList<Integer> subtasksOfEpicIds = epic.getSubtaskIds();
+            subtasksOfEpicIds.remove(id);
+            epic.setStatus(checkStatus(subtasksOfEpicIds));
             subtasks.remove(id);
         }
     }
@@ -209,7 +202,8 @@ public class InMemoryTaskManager implements TaskManager {
         epics.clear();
     }
 
+    @Override
     public List<Task> getHistory() {
-        return searchHistory.getHistory();
+        return historyManager.getHistory();
     }
 }
