@@ -365,43 +365,4 @@ class InMemoryTaskManagerTest {
         List<Task> history = taskManager.getHistory();
         assertEquals(1, history.size());
     }
-
-    @Test
-    void checkMaxSizeOfHistoryIs10() {
-        TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
-        Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW);
-        int task1Id = taskManager.addNewTask(task1);
-        int task2Id = taskManager.addNewTask(task2);
-
-        Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
-        int epic1Id = taskManager.addNewEpic(epic1);
-        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
-        Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.NEW);
-        int subtask1Id = taskManager.addNewSubtask(subtask1);
-        int subtask2Id = taskManager.addNewSubtask(subtask2);
-
-        Epic epic2 = new Epic("Эпик 2", "Простой эпик 2");
-        int epic2Id = taskManager.addNewEpic(epic2);
-        Subtask subtask3 = new Subtask(epic2Id, "подзадача 3", "простая подзадача 3",
-                TaskStatuses.NEW);
-        int subtask3Id = taskManager.addNewSubtask(subtask3);
-
-        int epic3Id = taskManager.addNewEpic(new Epic("Эпик 3", "пустой эпик 3"));
-        taskManager.getTask(task1Id);
-        taskManager.getTask(task2Id);
-        taskManager.getEpic(epic1Id);
-        taskManager.getEpic(epic2Id);
-        taskManager.getEpic(epic3Id);
-        taskManager.getSubTask(subtask1Id);
-        taskManager.getSubTask(subtask2Id);
-        taskManager.getSubTask(subtask3Id);
-        taskManager.getTask(task2Id);
-        taskManager.getEpic(epic3Id);
-        taskManager.getSubTask(subtask2Id);
-        List<Task> history = taskManager.getHistory();
-        assertEquals(10, history.size());
-    }
 }

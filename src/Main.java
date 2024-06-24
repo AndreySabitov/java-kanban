@@ -1,4 +1,3 @@
-import services.HistoryManager;
 import services.Managers;
 import services.TaskManager;
 import tasks.Epic;
@@ -38,6 +37,17 @@ public class Main {
 
         int epic3Id = taskManager.addNewEpic(new Epic("Эпик 3", "пустой эпик 3"));
 
+        taskManager.getTask(task1Id);
+        taskManager.getEpic(epic1Id);
+        taskManager.getSubTask(subtask1Id);
+        taskManager.getEpic(epic1Id);
+
+        taskManager.getHistory();
+
+        taskManager.deleteEpic(epic1Id);
+        taskManager.getHistory();
+        taskManager.deleteTask(task1Id);
+        taskManager.getHistory();
 
 
         taskManager.updateTask(new Task(task2Id, "Обновленная задача 2",
