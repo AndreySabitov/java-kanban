@@ -26,40 +26,37 @@ public class Main {
                 TaskStatuses.NEW);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
                 TaskStatuses.NEW);
-        Integer subtask1Id = taskManager.addNewSubtask(subtask1);
-        Integer subtask2Id = taskManager.addNewSubtask(subtask2);
+        Subtask subtask3 = new Subtask(epic1Id, "подзадача 3", "описание подзадачи 3",
+                TaskStatuses.NEW);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask3Id = taskManager.addNewSubtask(subtask3);
 
         Epic epic2 = new Epic("Эпик 2", "Простой эпик 2");
         int epic2Id = taskManager.addNewEpic(epic2);
-        Subtask subtask3 = new Subtask(epic2Id, "подзадача 3", "простая подзадача 3",
-                TaskStatuses.NEW);
-        Integer subtask3Id = taskManager.addNewSubtask(subtask3);
-
-        int epic3Id = taskManager.addNewEpic(new Epic("Эпик 3", "пустой эпик 3"));
 
         taskManager.getTask(task1Id);
+        System.out.println(taskManager.getHistory());
         taskManager.getEpic(epic1Id);
+        System.out.println(taskManager.getHistory());
         taskManager.getSubTask(subtask1Id);
+        System.out.println(taskManager.getHistory());
         taskManager.getEpic(epic1Id);
-
-        taskManager.getHistory();
-
-        taskManager.deleteEpic(epic1Id);
-        taskManager.getHistory();
+        System.out.println(taskManager.getHistory());
+        taskManager.getEpic(epic2Id);
+        System.out.println(taskManager.getHistory());
+        taskManager.getTask(task2Id);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubTask(subtask3Id);
+        System.out.println(taskManager.getHistory());
+        taskManager.getSubTask(subtask2Id);
+        System.out.println(taskManager.getHistory());
+        taskManager.getTask(task1Id);
+        System.out.println(taskManager.getHistory());
         taskManager.deleteTask(task1Id);
-        taskManager.getHistory();
-
-
-        taskManager.updateTask(new Task(task2Id, "Обновленная задача 2",
-                "новое описание задачи 2", TaskStatuses.IN_PROGRESS));
-        taskManager.updateSubtask(new Subtask(epic1Id, subtask2Id, "обновленная подзадача 2",
-                "Новое описание подзадачи 2", TaskStatuses.NEW));
-        taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "обновленная подзадача 1",
-                "Новое описание подзадачи 1", TaskStatuses.DONE));
-
-        taskManager.updateEpic(new Epic(epic2Id, "Эпик2new", "Новое описание эпика 2"));
-        taskManager.updateSubtask(new Subtask(epic2Id, subtask3Id, "обновленная подзадача 3",
-                "Описание подзадачи 3", TaskStatuses.DONE));
+        System.out.println(taskManager.getHistory());
+        taskManager.deleteEpic(epic1Id);
+        System.out.println(taskManager.getHistory());
     }
 }
 
