@@ -8,18 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final List<Task> searchHistoryList = new ArrayList<>();
     private final Map<Integer, Node<Task>> linkedHistoryList = new HashMap<>();
     private Node<Task> head;
     private Node<Task> tail;
 
     @Override
     public List<Task> getHistory() {
-        return new ArrayList<>(searchHistoryList);
+        return new ArrayList<>(getTasks());
     }
 
-    private void getTasks() {
-        searchHistoryList.clear();
+    private List<Task> getTasks() {
+        List<Task> searchHistoryList = new ArrayList<>();
         if (head != null) {
             searchHistoryList.add(head.currentTask);
             Node<Task> nextNode = head.nextTask;
@@ -28,6 +27,7 @@ public class InMemoryHistoryManager implements HistoryManager {
                 nextNode = nextNode.nextTask;
             }
         }
+        return searchHistoryList;
     }
 
     @Override
@@ -35,7 +35,6 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (task != null) {
             remove(task.getTaskId());
             linkLast(task);
-            getTasks();
         }
     }
 
@@ -77,7 +76,6 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void remove(int id) {
         if (linkedHistoryList.containsKey(id)) {
             removeNode(linkedHistoryList.get(id));
-            getTasks();
         }
     }
 }

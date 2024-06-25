@@ -468,4 +468,63 @@ class InMemoryTaskManagerTest {
         List<Task> history = taskManager.getHistory();
         assertArrayEquals(list.toArray(), history.toArray());
     }
+
+    @Test
+    void checkDeleteAllTasksFromHistoryWhenDeleteAllTasks() {
+        TaskManager taskManager = Managers.getDefault();
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW);
+        int task1Id = taskManager.addNewTask(task1);
+        int task2Id = taskManager.addNewTask(task2);
+        taskManager.getTask(task1Id);
+        taskManager.getTask(task2Id);
+        taskManager.deleteTasks();
+        List<Task> history = taskManager.getHistory();
+        assertTrue(history.isEmpty());
+    }
+
+    @Test
+    void checkDeleteAllSubtasksFromHistoryWhenDeleteAllSubtasks() {
+        TaskManager taskManager = Managers.getDefault();
+        Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
+        int epic1Id = taskManager.addNewEpic(epic1);
+        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
+                TaskStatuses.NEW);
+        Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
+                TaskStatuses.NEW);
+        Subtask subtask3 = new Subtask(epic1Id, "подзадача 3", "описание подзадачи 3",
+                TaskStatuses.NEW);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask3Id = taskManager.addNewSubtask(subtask3);
+        taskManager.getSubTask(subtask1Id);
+        taskManager.getSubTask(subtask2Id);
+        taskManager.getSubTask(subtask3Id);
+        taskManager.deleteSubtasks();
+        List<Task> history = taskManager.getHistory();
+        assertTrue(history.isEmpty());
+    }
+
+    @Test
+    void checkDeleteAllEpicsAndSubtasksWhenDeleteAllEpics() {
+        TaskManager taskManager = Managers.getDefault();
+        Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
+        int epic1Id = taskManager.addNewEpic(epic1);
+        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
+                TaskStatuses.NEW);
+        Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
+                TaskStatuses.NEW);
+        Subtask subtask3 = new Subtask(epic1Id, "подзадача 3", "описание подзадачи 3",
+                TaskStatuses.NEW);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        int subtask2Id = taskManager.addNewSubtask(subtask2);
+        int subtask3Id = taskManager.addNewSubtask(subtask3);
+        taskManager.getSubTask(subtask1Id);
+        taskManager.getSubTask(subtask2Id);
+        taskManager.getSubTask(subtask3Id);
+        taskManager.getEpic(epic1Id);
+        taskManager.deleteEpics();
+        List<Task> history = taskManager.getHistory();
+        assertTrue(history.isEmpty());
+    }
 }
