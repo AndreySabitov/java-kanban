@@ -1,17 +1,20 @@
 package services;
 
-import tasks.*;
+import tasks.Epic;
+import tasks.Subtask;
+import tasks.Task;
+import tasks.TaskStatuses;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Epic> epics = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, Epic> epics = new HashMap<>();
+    protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistory();
-    private Integer count = 0;
+    protected static Integer count = 0;
 
     private Integer setId() {
         return count++;
@@ -84,7 +87,7 @@ public class InMemoryTaskManager implements TaskManager {
         return id;
     }
 
-    private TaskStatuses checkStatus(ArrayList<Integer> subtasksIds) {
+    protected TaskStatuses checkStatus(ArrayList<Integer> subtasksIds) {
         int countNew = 0;
         int countDone = 0;
         ArrayList<Subtask> subtasksOfEpic = new ArrayList<>();
