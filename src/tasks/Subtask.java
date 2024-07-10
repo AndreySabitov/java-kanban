@@ -1,7 +1,7 @@
 package tasks;
 
 public class Subtask extends Task {
-    private final int idOfEpic;
+    private final Integer idOfEpic;
 
     public Subtask(int idOfEpic, String taskName, String taskDescription, TaskStatuses status) {
         super(taskName, taskDescription, status);
@@ -29,5 +29,10 @@ public class Subtask extends Task {
                 ", taskDescription='" + taskDescription + '\'' +
                 ", status=" + status +
                 '}';
+    }
+
+    public String toStringFile() {
+        return String.join(",", taskId.toString(), TasksTypes.SUBTASK.toString(), taskName,
+                status.toString(), taskDescription, idOfEpic.toString());
     }
 }

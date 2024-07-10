@@ -16,13 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FileBackedTaskManagerTest {
     @Test
-    void canCreateNewFileBackedTaskManagerWithEmptyFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        assertNotNull(taskManager);
-    }
-
-    @Test
     void canSaveEmptyFileBackedTaskManager() throws IOException {
         File file = File.createTempFile("test", ".CSV");
         FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
@@ -33,10 +26,8 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-        assertEquals(0, count);
+        assertEquals(1, count);
     }
 
     @Test
@@ -50,8 +41,6 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
         assertEquals(2, count);
     }
@@ -67,8 +56,6 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
         assertEquals(2, count);
     }
@@ -86,8 +73,6 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
         assertEquals(3, count);
     }
@@ -105,10 +90,8 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-        assertEquals(0, count);
+        assertEquals(1, count);
     }
 
     @Test
@@ -125,8 +108,6 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
         assertEquals(2, count);
     }
@@ -145,10 +126,8 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-        assertEquals(0, count);
+        assertEquals(1, count);
     }
 
     @Test
@@ -163,10 +142,8 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-        assertEquals(0, count);
+        assertEquals(1, count);
     }
 
     @Test
@@ -183,8 +160,6 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
         assertEquals(2, count);
     }
@@ -203,10 +178,8 @@ class FileBackedTaskManagerTest {
                 br.readLine();
                 count++;
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-        assertEquals(0, count);
+        assertEquals(1, count);
     }
 
     @Test
@@ -237,6 +210,7 @@ class FileBackedTaskManagerTest {
         TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
         Epic epic2 = newTaskManager.getEpic(epic1ID);
         assertEquals(epic2, epic1);
+        assertArrayEquals(epic2.getSubtaskIds().toArray(), epic1.getSubtaskIds().toArray());
     }
 
     @Test
@@ -250,6 +224,7 @@ class FileBackedTaskManagerTest {
         TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
         Subtask subtask2 = newTaskManager.getSubTask(subtask1Id);
         assertEquals(subtask2, subtask1);
+        assertEquals(subtask2.getIdOfEpic(), subtask1.getIdOfEpic());
     }
 
     @Test
@@ -318,5 +293,16 @@ class FileBackedTaskManagerTest {
         taskManager.getSubTask(subtask1Id);
         List<Task> tasksHistory = taskManager.getHistory();
         assertEquals(3, tasksHistory.size());
+    }
+
+    @Test
+    void checkFileBackedManagerRestoreNumberOfNextTaskId() throws IOException {
+        File file = File.createTempFile("test", ".CSV");
+        TaskManager taskManager = new FileBackedTaskManager(file);
+        taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW));
+        TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
+        int task2Id = newTaskManager.addNewTask(new Task("Задача 2", "Описание задачи 2",
+                TaskStatuses.IN_PROGRESS));
+        assertEquals(1, task2Id);
     }
 }

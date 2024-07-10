@@ -38,4 +38,10 @@ public class Epic extends Task {
                 ", status=" + status +
                 '}';
     }
+
+    @Override
+    public String toStringFile() {
+        return String.join(",", taskId.toString(), TasksTypes.EPIC.toString(), taskName,
+                status.toString(), taskDescription);
+    }
 }
