@@ -94,4 +94,9 @@ public class Task {
                 ", status=" + status +
                 '}';
     }
+
+    public String toStringFile() {
+        return String.join(",", taskId.toString(), TasksTypes.TASK.toString(), taskName,
+                status.toString(), taskDescription);
+    }
 }
