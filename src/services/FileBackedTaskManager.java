@@ -71,7 +71,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         epic.saveSubtaskId(subtask.getTaskId());
     }
 
-    public void save() throws ManagerSaveException {
+    public void save() {
         try (FileWriter writer = new FileWriter(String.valueOf(path), StandardCharsets.UTF_8)) {
             writer.write("id,type,name,status,description,epic\n");
             for (Task task : getTasksList()) {
