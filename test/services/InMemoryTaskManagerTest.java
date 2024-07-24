@@ -1,26 +1,30 @@
 package services;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 import tasks.TaskStatuses;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-class InMemoryTaskManagerTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
     @Test
     void managerCanGetListsOfAllTasks() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plusMinutes(35));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         List<Task> tasks = taskManager.getTasksList();
         assertFalse(tasks.isEmpty());
@@ -33,12 +37,14 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanGetEpicSubtasks() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plusMinutes(60));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         int subtask2Id = taskManager.addNewSubtask(subtask2);
         List<Subtask> subtasks = taskManager.getEpicSubtasks(epic1Id);
@@ -55,8 +61,10 @@ class InMemoryTaskManagerTest {
     @Test
     void returnMinusOneIfTryAddSubtaskToNonExistentEpic() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Subtask subtask1 = new Subtask(1, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         assertEquals(-1, subtask1Id);
     }
@@ -85,8 +93,10 @@ class InMemoryTaskManagerTest {
     @Test
     void cantUpdateNonExistentTask() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         taskManager.updateTask(new Task(1, "Обновленная задача 2",
-                "новое описание задачи 2", TaskStatuses.IN_PROGRESS));
+                "новое описание задачи 2", TaskStatuses.IN_PROGRESS, duration, time));
         assertNull(taskManager.getTask(1));
     }
 
@@ -100,41 +110,48 @@ class InMemoryTaskManagerTest {
     @Test
     void cantUpdateNonExistentSubtask() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         taskManager.updateSubtask(new Subtask(epic1Id, 3, "обновленная подзадача 2",
-                "Новое описание подзадачи 2", TaskStatuses.NEW));
+                "Новое описание подзадачи 2", TaskStatuses.NEW, duration, time));
         assertNull(taskManager.getSubTask(3));
     }
 
     @Test
     void checkAutoChangeStatusOfEpic() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plus(duration));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         int subtask2Id = taskManager.addNewSubtask(subtask2);
+        assertEquals(TaskStatuses.NEW, taskManager.getEpic(epic1Id).getStatus());
         taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "обновленная подзадача 1",
-                "Новое описание подзадачи 1", TaskStatuses.DONE));
+                "Новое описание подзадачи 1", TaskStatuses.DONE, duration, time.plus(duration)));
         assertEquals(TaskStatuses.IN_PROGRESS, taskManager.getEpic(epic1Id).getStatus());
         taskManager.updateSubtask(new Subtask(epic1Id, subtask2Id, "обновленная подзадача 2",
-                "Новое описание подзадачи 2", TaskStatuses.DONE));
+                "Новое описание подзадачи 2", TaskStatuses.DONE, duration, time.plus(duration)));
         assertEquals(TaskStatuses.DONE, taskManager.getEpic(epic1Id).getStatus());
     }
 
     @Test
     void checkNewEpicAlwaysHasStatusNew() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.IN_PROGRESS);
+                TaskStatuses.IN_PROGRESS, duration, time);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.DONE);
+                TaskStatuses.DONE, duration, time.plus(duration));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         int subtask2Id = taskManager.addNewSubtask(subtask2);
         int epic2Id = taskManager.addNewEpic(taskManager.getEpic(epic1Id));
@@ -144,10 +161,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanUpdateTask() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.updateTask(new Task(task1Id, "Задача 1",
-                "Новое описание задачи 1", TaskStatuses.NEW));
+                "Новое описание задачи 1", TaskStatuses.NEW, duration, time.plus(duration)));
         Task task = taskManager.getTask(task1Id);
         assertNotEquals(task, task1);
     }
@@ -167,13 +186,15 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanUpdateSubtask() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "подзадача 1",
-                "Новое описание подзадачи 1", TaskStatuses.NEW));
+                "Новое описание подзадачи 1", TaskStatuses.NEW, duration, time.plus(duration)));
         Subtask subtask = taskManager.getSubTask(subtask1Id);
         assertNotEquals(subtask, subtask1);
     }
@@ -181,7 +202,10 @@ class InMemoryTaskManagerTest {
     @Test
     void tasksWithSameIdIsSame() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task1Id = taskManager.addNewTask(task1);
         assertEquals(taskManager.getTask(task1Id), taskManager.getTask(task1Id));
     }
@@ -197,10 +221,12 @@ class InMemoryTaskManagerTest {
     @Test
     void subtasksWithSameIdIsSame() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         assertEquals(taskManager.getSubTask(subtask1Id), taskManager.getSubTask(subtask1Id));
     }
@@ -208,10 +234,12 @@ class InMemoryTaskManagerTest {
     @Test
     void cantMakeEpicYourOwnSubtask() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask = new Subtask(epic1Id, epic1Id, "эпик подзадача",
-                "пытаюсь сделать эпик подзадачей", TaskStatuses.NEW);
+                "пытаюсь сделать эпик подзадачей", TaskStatuses.NEW, duration, time);
         int subtaskEpicId = taskManager.addNewSubtask(subtask);
         assertEquals(-1, subtaskEpicId);
     }
@@ -219,13 +247,15 @@ class InMemoryTaskManagerTest {
     @Test
     void cantMakeSubtaskYourOwnEpic() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         Subtask subtaskOfSubtask = new Subtask(subtask1Id, "подзадача - Эпик",
-                "хочу сделать подзадачу своим эпиком", TaskStatuses.NEW);
+                "хочу сделать подзадачу своим эпиком", TaskStatuses.NEW, duration, time.plus(duration));
         int epicSubtaskId = taskManager.addNewSubtask(subtaskOfSubtask);
         assertEquals(-1, epicSubtaskId);
     }
@@ -233,7 +263,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanCreateTask() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         assertNotNull(taskManager.getTask(task1Id));
     }
@@ -241,7 +273,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanDeleteTask() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.deleteTask(task1Id);
         assertNull(taskManager.getTask(task1Id));
@@ -258,10 +292,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanDeleteEpicAndItsSubtasks() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteEpic(epic1Id);
         assertNull(taskManager.getSubTask(subtask1Id));
@@ -271,10 +307,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanCreateSubtask() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plus(duration));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         assertNotNull(taskManager.getSubTask(subtask1Id));
     }
@@ -282,10 +320,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanDeleteSubtaskAndItsIdDeleteFromItsEpic() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteSubtask(subtask1Id);
         assertNull(taskManager.getSubTask(subtask1Id));
@@ -295,9 +335,12 @@ class InMemoryTaskManagerTest {
     @Test
     void CheckManagerCanDeleteAllTasks() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
-        Task task2 = new Task("Задача 2", "Простая задача 2", TaskStatuses.NEW);
+        Task task2 = new Task("Задача 2", "Простая задача 2", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task2Id = taskManager.addNewTask(task2);
         taskManager.deleteTasks();
         assertTrue(taskManager.getTasksList().isEmpty());
@@ -306,10 +349,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanDeleteAllEpics() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         Integer subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteEpics();
         assertTrue(taskManager.getEpicsList().isEmpty());
@@ -319,10 +364,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkManagerCanDeleteAllSubtasks() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         taskManager.deleteSubtasks();
         assertTrue(taskManager.getSubtasksList().isEmpty());
     }
@@ -330,9 +377,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkNoConflictBetweenTasksWithGeneratedIdAndWithGivenId() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
-        Task task2 = new Task(task1Id, "задача 2", "задача 2 с таким же id", TaskStatuses.NEW);
+        Task task2 = new Task(task1Id, "задача 2", "задача 2 с таким же id", TaskStatuses.NEW,
+                duration, time.plus(duration));
         int task2Id = taskManager.addNewTask(task2);
         assertTrue(task1Id != task2Id);
     }
@@ -340,7 +390,10 @@ class InMemoryTaskManagerTest {
     @Test
     void checkTaskNotChangeWhenAddedToManager() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task1Id = taskManager.addNewTask(task1);
         assertEquals(task1, taskManager.getTask(task1Id));
     }
@@ -348,11 +401,13 @@ class InMemoryTaskManagerTest {
     @Test
     void checkHistoryManagerSavePreviousVersionOfTask() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
         taskManager.updateTask(new Task(task1Id, "Обновленная задача 1",
-                "новое описание задачи 1", TaskStatuses.IN_PROGRESS));
+                "новое описание задачи 1", TaskStatuses.IN_PROGRESS, duration, time.plus(duration)));
         List<Task> history = taskManager.getHistory();
         assertEquals(task1, history.get(0));
     }
@@ -360,7 +415,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkAddTaskToHistory() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
         List<Task> history = taskManager.getHistory();
@@ -370,7 +427,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkHistoryManagerNotSaveDuplicates() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
         taskManager.getTask(task1Id);
@@ -381,7 +440,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkRecallTaskGoToTheEndOfHistoryList() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
@@ -395,7 +456,9 @@ class InMemoryTaskManagerTest {
     @Test
     void checkIfDeleteTaskThisTaskDeleteFromHistory() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getTask(task1Id);
         taskManager.deleteTask(task1Id);
@@ -406,10 +469,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkIfDeleteSubtaskThisSubtaskDeleteFromHistory() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.getSubTask(subtask1Id);
         taskManager.deleteSubtask(subtask1Id);
@@ -420,10 +485,12 @@ class InMemoryTaskManagerTest {
     @Test
     void checkIfDeleteEpicThisEpicAndItsSubtasksDeleteFromHistory() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.getEpic(epic1Id);
         taskManager.getSubTask(subtask1Id);
@@ -435,12 +502,15 @@ class InMemoryTaskManagerTest {
     @Test
     void checkHistoryListSaveTheSameOrder() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getEpic(epic1Id);
         taskManager.getSubTask(subtask1Id);
@@ -453,12 +523,15 @@ class InMemoryTaskManagerTest {
     @Test
     void checkSaveOrderAfterDeleteTaskFromMidOfList() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task1Id = taskManager.addNewTask(task1);
         taskManager.getEpic(epic1Id);
         taskManager.getSubTask(subtask1Id);
@@ -472,8 +545,11 @@ class InMemoryTaskManagerTest {
     @Test
     void checkDeleteAllTasksFromHistoryWhenDeleteAllTasks() {
         TaskManager taskManager = Managers.getDefault();
-        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW);
-        Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW);
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
+        Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
+        Task task2 = new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW, duration,
+                time.plus(duration));
         int task1Id = taskManager.addNewTask(task1);
         int task2Id = taskManager.addNewTask(task2);
         taskManager.getTask(task1Id);
@@ -486,14 +562,16 @@ class InMemoryTaskManagerTest {
     @Test
     void checkDeleteAllSubtasksFromHistoryWhenDeleteAllSubtasks() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plus(duration));
         Subtask subtask3 = new Subtask(epic1Id, "подзадача 3", "описание подзадачи 3",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plusMinutes(60));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         int subtask2Id = taskManager.addNewSubtask(subtask2);
         int subtask3Id = taskManager.addNewSubtask(subtask3);
@@ -506,16 +584,18 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void checkDeleteAllEpicsAndSubtasksWhenDeleteAllEpics() {
+    void checkDeleteAllEpicsAndSubtasksFromHistoryWhenDeleteAllEpics() {
         TaskManager taskManager = Managers.getDefault();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.now();
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
         Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "описание подзадачи 1",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time);
         Subtask subtask2 = new Subtask(epic1Id, "подзадача 2", "описание подзадачи 2",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plus(duration));
         Subtask subtask3 = new Subtask(epic1Id, "подзадача 3", "описание подзадачи 3",
-                TaskStatuses.NEW);
+                TaskStatuses.NEW, duration, time.plusMinutes(60));
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         int subtask2Id = taskManager.addNewSubtask(subtask2);
         int subtask3Id = taskManager.addNewSubtask(subtask3);

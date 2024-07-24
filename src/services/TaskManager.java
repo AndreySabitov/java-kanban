@@ -5,6 +5,7 @@ import tasks.Subtask;
 import tasks.Task;
 
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
     List<Task> getTasksList();
@@ -46,4 +47,6 @@ public interface TaskManager {
     void deleteEpics();
 
     List<Task> getHistory();
+
+    TreeSet<Task> getPrioritizedTaskList();
 }
