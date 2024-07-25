@@ -43,7 +43,7 @@ public class Epic extends Task {
     public String toString() {
         return "Epic{" +
                 "subtaskIds=" + subtaskIds +
-                ", finishTime=" + endTime.format(FORMATTER) +
+                ", endTime=" + endTime.format(FORMATTER) +
                 ", taskId=" + taskId +
                 ", taskName='" + taskName + '\'' +
                 ", taskDescription='" + taskDescription + '\'' +

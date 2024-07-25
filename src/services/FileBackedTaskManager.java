@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final Path path;
@@ -24,9 +23,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
         try {
             List<String> tasksFromFile = Files.readAllLines(file.toPath());
-            Stream.iterate(1, i -> i < tasksFromFile.size(), i -> i + 1)
-                    .forEach(i -> {
-                        String[] infAboutTask = tasksFromFile.get(i).split(",");
+            tasksFromFile.stream().skip(1)
+                    .forEach(string -> {
+                        String[] infAboutTask = string.split(",");
                         taskManager.restoreCount(infAboutTask[0]);
                         switch (TasksTypes.valueOf(infAboutTask[1])) {
                             case TASK:
@@ -192,15 +191,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
+    public Path getPath() {
+        return path;
+    }
+
     public static void main(String[] args) {
         File file = new File("src\\workFile.CSV");
         FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
-        taskManager.addNewTask(new Task("пап", "ыывва", TaskStatuses.IN_PROGRESS,
-                Duration.ofMinutes(60), LocalDateTime.now()));
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
         taskManager.addNewSubtask(new Subtask(epic1Id, "Пз1", "Опз1", TaskStatuses.IN_PROGRESS,
-                Duration.ofMinutes(30), LocalDateTime.now().plusMinutes(70)));
-        taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW,
-                Duration.ofMinutes(60), null));
+                Duration.ofMinutes(30), LocalDateTime.now()));
+        taskManager.addNewSubtask(new Subtask(epic1Id, "Пз2", "Опз2", TaskStatuses.IN_PROGRESS,
+                Duration.ofMinutes(30), LocalDateTime.now().plusMinutes(60)));
+        taskManager.deleteSubtask(2);
     }
 }

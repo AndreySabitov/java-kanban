@@ -1,5 +1,6 @@
 package services;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
@@ -16,11 +17,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    @BeforeEach
+    public void initManager() throws IOException {
+        File file = File.createTempFile("test", ".CSV");
+        taskManager = new FileBackedTaskManager(file);
+    }
+
     @Test
     void canSaveEmptyFileBackedTaskManager() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         taskManager.save();
         int count = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -33,63 +39,55 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
     }
 
     @Test
-    void canAddTaskAndSaveThisTaskInFile() throws IOException {
+    void canAddTaskAndSaveThisTaskInFile() {
         Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1",
-                TaskStatuses.NEW, duration, time));
-        int count = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while (br.ready()) {
-                br.readLine();
-                count++;
-            }
-        }
-        assertEquals(2, count);
+        LocalDateTime time = LocalDateTime.of(2022, 11, 11, 16, 0);
+        File file = taskManager.getPath().toFile();
+        Task task1 = new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW, duration, time);
+        int task1Id = taskManager.addNewTask(task1);
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+        Task task2 = fileBackedTaskManager.getTask(task1Id);
+        assertEquals(task2, task1);
+        assertEquals(task2.getDuration(), task1.getDuration());
+        assertEquals(task2.getStartTime(), task1.getStartTime());
     }
 
     @Test
-    void canAddEpicAndSaveThisEpicInFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        int count = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while (br.ready()) {
-                br.readLine();
-                count++;
-            }
-        }
-        assertEquals(2, count);
+    void canAddEpicAndSaveThisEpicInFile() {
+        File file = taskManager.getPath().toFile();
+        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
+        int epic1Id = taskManager.addNewEpic(epic1);
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+        Epic epic2 = fileBackedTaskManager.getEpic(epic1Id);
+        assertEquals(epic2, epic1);
+        assertArrayEquals(epic2.getSubtaskIds().toArray(), epic1.getSubtaskIds().toArray());
+        assertEquals(epic2.getDuration(), epic1.getDuration());
+        assertEquals(epic2.getStartTime(), epic1.getStartTime());
+        assertEquals(epic2.getEndTime(), epic1.getEndTime());
     }
 
     @Test
-    void canAddSubtaskAndSaveThisSubtaskInFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+    void canAddSubtaskAndSaveThisSubtaskInFile() {
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.of(2022, 11, 11, 16, 0);
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        taskManager.addNewSubtask(new Subtask(epic1Id, "подзадача 1", "Описание подзадачи 1",
-                TaskStatuses.NEW, duration, time));
-        int count = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while (br.ready()) {
-                br.readLine();
-                count++;
-            }
-        }
-        assertEquals(3, count);
+        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "Описание подзадачи 1",
+                TaskStatuses.NEW, duration, time);
+        int subtask1Id = taskManager.addNewSubtask(subtask1);
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+        Subtask subtask2 = fileBackedTaskManager.getSubTask(subtask1Id);
+        assertEquals(subtask2, subtask1);
+        assertEquals(subtask2.getIdOfEpic(), subtask1.getIdOfEpic());
+        assertEquals(subtask2.getDuration(), subtask1.getDuration());
+        assertEquals(subtask2.getStartTime(), subtask1.getStartTime());
     }
 
     @Test
     void checkWhenDeleteTaskThisTaskDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.of(2022, 11, 11, 16, 0);
         int task1Id = taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1",
                 TaskStatuses.NEW, duration, time));
         taskManager.deleteTask(task1Id);
@@ -105,8 +103,7 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
 
     @Test
     void checkWhenDeleteSubtaskThisSubtaskDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
@@ -125,8 +122,7 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
 
     @Test
     void checkWhenDeleteEpicThisEpicDeleteFromFileAndSubtasksOfThisEpicDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
@@ -145,8 +141,7 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
 
     @Test
     void checkWhenDeleteAllTasksAllTasksDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW,
@@ -164,8 +159,7 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
 
     @Test
     void checkWhenDeleteAllSubtasksAllSubtasksDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
@@ -184,8 +178,7 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
 
     @Test
     void checkWhenDeleteAllEpicsAllEpicsAndAllSubtasksDeleteFromFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
@@ -210,53 +203,10 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
     }
 
     @Test
-    void checkTaskNotChangeWhenLoadToFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+    void checkFileBackedTaskManagerCanUpdateTaskAndSaveThisInFile() {
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
-        Task task1 = new Task("Задача 1", "Описание задачи 1", TaskStatuses.IN_PROGRESS,
-                duration, time);
-        int task1Id = taskManager.addNewTask(task1);
-        TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
-        Task task2 = newTaskManager.getTask(task1Id);
-        assertEquals(task2, task1);
-    }
-
-    @Test
-    void checkEpicNotChangeWhenLoadToFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
-        int epic1ID = taskManager.addNewEpic(epic1);
-        TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
-        Epic epic2 = newTaskManager.getEpic(epic1ID);
-        assertEquals(epic2, epic1);
-        assertArrayEquals(epic2.getSubtaskIds().toArray(), epic1.getSubtaskIds().toArray());
-    }
-
-    @Test
-    void checkSubtaskNotChangeWhenLoadToFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
-        int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        Subtask subtask1 = new Subtask(epic1Id, "подзадача 1", "Описание подзадачи 1",
-                TaskStatuses.DONE, duration, time);
-        int subtask1Id = taskManager.addNewSubtask(subtask1);
-        TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
-        Subtask subtask2 = newTaskManager.getSubTask(subtask1Id);
-        assertEquals(subtask2, subtask1);
-        assertEquals(subtask2.getIdOfEpic(), subtask1.getIdOfEpic());
-    }
-
-    @Test
-    void checkFileBackedTaskManagerCanUpdateTaskAndSaveThisInFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.of(2020, 10, 10, 15, 0);
         int task1Id = taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1",
                 TaskStatuses.IN_PROGRESS, duration, time));
         taskManager.updateTask(new Task(task1Id, "Задача 1", "Обновленная задача 1",
@@ -265,26 +215,30 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
         Task task1 = taskManager.getTask(task1Id);
         Task task2 = newTaskManager.getTask(task1Id);
         assertEquals(task2, task1);
+        assertEquals(task2.getDuration(), task1.getDuration());
+        assertEquals(task2.getStartTime(), task1.getStartTime());
     }
 
     @Test
-    void checkFileBackedTaskManagerCanUpdateEpicAndSaveThisInFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+    void checkFileBackedTaskManagerCanUpdateEpicAndSaveThisInFile() {
+        File file = taskManager.getPath().toFile();
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
         taskManager.updateEpic(new Epic(epic1Id, "Эпик 1", "Обновленное описание эпика 1"));
         TaskManager newTaskManager = FileBackedTaskManager.loadFromFile(file);
         Epic epic1 = taskManager.getEpic(epic1Id);
         Epic epic2 = newTaskManager.getEpic(epic1Id);
         assertEquals(epic2, epic1);
+        assertArrayEquals(epic2.getSubtaskIds().toArray(), epic1.getSubtaskIds().toArray());
+        assertEquals(epic2.getDuration(), epic1.getDuration());
+        assertEquals(epic2.getStartTime(), epic1.getStartTime());
+        assertEquals(epic2.getEndTime(), epic1.getEndTime());
     }
 
     @Test
-    void checkFileBackedManagerCanUpdateSubtaskAndSaveThisInFile() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+    void checkFileBackedManagerCanUpdateSubtaskAndSaveThisInFile() {
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
+        LocalDateTime time = LocalDateTime.of(2021, 6, 20, 11, 0);
         int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
         int subtask1Id = taskManager.addNewSubtask(new Subtask(epic1Id, "Подзадача 1",
                 "Описание подзадачи 1", TaskStatuses.NEW, duration, time));
@@ -294,43 +248,14 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
         Subtask subtask1 = taskManager.getSubTask(subtask1Id);
         Subtask subtask2 = newTaskManager.getSubTask(subtask1Id);
         assertEquals(subtask2, subtask1);
+        assertEquals(subtask2.getIdOfEpic(), subtask1.getIdOfEpic());
+        assertEquals(subtask2.getDuration(), subtask1.getDuration());
+        assertEquals(subtask2.getStartTime(), subtask1.getStartTime());
     }
 
     @Test
-    void checkFileBackedManagerCanGetEpicSubtasks() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
-        int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        int subtask1Id = taskManager.addNewSubtask(new Subtask(epic1Id, "Подзадача 1",
-                "Описание подзадачи 1", TaskStatuses.NEW, duration, time));
-        List<Subtask> subtasks = taskManager.getEpicSubtasks(epic1Id);
-        assertFalse(subtasks.isEmpty());
-    }
-
-    @Test
-    void checkFileBackedManagerCanGetHistory() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
-        Duration duration = Duration.ofMinutes(30);
-        LocalDateTime time = LocalDateTime.now();
-        int task1Id = taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1",
-                TaskStatuses.NEW, duration, time));
-        int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        int subtask1Id = taskManager.addNewSubtask(new Subtask(epic1Id, "Подзадача 1",
-                "Описание подзадачи 1", TaskStatuses.IN_PROGRESS, duration, time.plus(duration)));
-        taskManager.getTask(task1Id);
-        taskManager.getEpic(epic1Id);
-        taskManager.getSubTask(subtask1Id);
-        List<Task> tasksHistory = taskManager.getHistory();
-        assertEquals(3, tasksHistory.size());
-    }
-
-    @Test
-    void checkFileBackedManagerRestoreNumberOfNextTaskId() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
-        TaskManager taskManager = new FileBackedTaskManager(file);
+    void checkFileBackedManagerRestoreNumberOfNextTaskId() {
+        File file = taskManager.getPath().toFile();
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.now();
         taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW,
@@ -342,10 +267,26 @@ class FileBackedTaskManagerTest extends InMemoryTaskManagerTest {
     }
 
     @Test
-    void checkSaveToFileCanThrowManagerSaveException() throws IOException {
-        File file = File.createTempFile("test", ".CSV");
+    void checkFileBackedManagerRestorePrioritizedTaskListFromFile() {
+        File file = taskManager.getPath().toFile();
+        Duration duration = Duration.ofMinutes(30);
+        LocalDateTime time = LocalDateTime.of(2021, 12, 31, 22, 15);
+        taskManager.addNewTask(new Task("Задача 3", "Описание задачи 3", TaskStatuses.NEW,
+                duration, time.plusMinutes(70)));
+        taskManager.addNewTask(new Task("Задача 2", "Описание задачи 2", TaskStatuses.NEW,
+                duration, time.plusMinutes(35)));
+        taskManager.addNewTask(new Task("Задача 1", "Описание задачи 1", TaskStatuses.IN_PROGRESS,
+                duration, time));
+        List<Task> list1 = taskManager.getPrioritizedTasks();
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+        List<Task> list2 = fileBackedTaskManager.getPrioritizedTasks();
+        assertArrayEquals(list1.toArray(), list2.toArray());
+    }
+
+    @Test
+    void checkSaveToFileCanThrowManagerSaveException() {
+        File file = taskManager.getPath().toFile();
         file.setWritable(false);
-        FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
         assertThrows(ManagerSaveException.class, taskManager::save);
     }
 
