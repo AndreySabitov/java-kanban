@@ -266,6 +266,8 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setEndTime(endSubtask.getEndTime());
         } else {
             epic.setDuration(Duration.ofMinutes(0));
+            epic.setStartTime(null);
+            epic.setEndTime(null);
         }
     }
 
