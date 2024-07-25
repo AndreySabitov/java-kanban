@@ -1,5 +1,8 @@
 package tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class Task {
@@ -7,21 +10,30 @@ public class Task {
     protected String taskName;
     protected String taskDescription;
     protected TaskStatuses status;
+    protected Duration duration;
+    protected LocalDateTime startTime;
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     public Task() {
     }
 
-    public Task(String taskName, String taskDescription, TaskStatuses status) {
+    public Task(String taskName, String taskDescription, TaskStatuses status, Duration duration,
+                LocalDateTime startTime) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
-    public Task(Integer taskId, String taskName, String taskDescription, TaskStatuses status) {
+    public Task(Integer taskId, String taskName, String taskDescription, TaskStatuses status, Duration duration,
+                LocalDateTime startTime) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     @Override
@@ -85,6 +97,26 @@ public class Task {
         this.status = status;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plus(duration);
+    }
+
     @Override
     public String toString() {
         return "Task{" +
@@ -92,11 +124,13 @@ public class Task {
                 ", taskName='" + taskName + '\'' +
                 ", taskDescription='" + taskDescription + '\'' +
                 ", status=" + status +
+                ", duration=" + duration.toMinutes() +
+                ", startTime=" + startTime.format(FORMATTER) +
                 '}';
     }
 
     public String toStringFile() {
         return String.join(",", taskId.toString(), TasksTypes.TASK.toString(), taskName,
-                status.toString(), taskDescription);
+                status.toString(), taskDescription, String.valueOf(duration.toMinutes()), startTime.format(FORMATTER));
     }
 }

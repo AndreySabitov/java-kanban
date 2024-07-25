@@ -1,9 +1,11 @@
 package tasks;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
     private final ArrayList<Integer> subtaskIds = new ArrayList<>();
+    private LocalDateTime endTime;
 
     public Epic(String taskName, String taskDescription) {
         this.taskName = taskName;
@@ -28,20 +30,38 @@ public class Epic extends Task {
         subtaskIds.add(id);
     }
 
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
     @Override
     public String toString() {
         return "Epic{" +
                 "subtaskIds=" + subtaskIds +
+                ", endTime=" + endTime.format(FORMATTER) +
                 ", taskId=" + taskId +
                 ", taskName='" + taskName + '\'' +
                 ", taskDescription='" + taskDescription + '\'' +
                 ", status=" + status +
+                ", duration=" + duration.toMinutes() +
+                ", startTime=" + startTime.format(FORMATTER) +
                 '}';
     }
 
     @Override
     public String toStringFile() {
-        return String.join(",", taskId.toString(), TasksTypes.EPIC.toString(), taskName,
-                status.toString(), taskDescription);
+        if (startTime != null) {
+            return String.join(",", taskId.toString(), TasksTypes.EPIC.toString(), taskName,
+                    status.toString(), taskDescription, String.valueOf(duration.toMinutes()),
+                    startTime.format(FORMATTER), endTime.format(FORMATTER));
+        } else {
+            return String.join(",", taskId.toString(), TasksTypes.EPIC.toString(), taskName,
+                    status.toString(), taskDescription, String.valueOf(duration.toMinutes()));
+        }
     }
 }
