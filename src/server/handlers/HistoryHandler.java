@@ -1,14 +1,11 @@
 package server.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import services.TaskManager;
-import tasks.Task;
 
 import java.io.IOException;
-import java.util.List;
 
-public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
+public class HistoryHandler extends BaseHttpHandler {
     public HistoryHandler(TaskManager taskManager) {
         super(taskManager);
     }
@@ -26,11 +23,7 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void handleGetHistory(HttpExchange exchange) throws IOException {
-        int rCode = 200;
-        String response;
-        List<Task> history = taskManager.getHistory();
-        response = gson.toJson(history);
-        sendText(exchange, response, rCode);
+        sendText(exchange, gson.toJson(taskManager.getHistory()), 200);
     }
 
     private Endpoint getEndpoint(HttpExchange exchange) {

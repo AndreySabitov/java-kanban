@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import services.NotFoundException;
 import services.TaskManager;
 import tasks.Epic;
@@ -16,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
+public class EpicsHandler extends BaseHttpHandler {
     public EpicsHandler(TaskManager taskManager) {
         super(taskManager);
     }
@@ -47,12 +46,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void handleGetEpics(HttpExchange exchange) throws IOException {
-        int rCode;
-        String response;
-        List<Epic> epicsList = taskManager.getEpicsList();
-        response = gson.toJson(epicsList);
-        rCode = 200;
-        sendText(exchange, response, rCode);
+        sendText(exchange, gson.toJson(taskManager.getEpicsList()), 200);
     }
 
     private void handleGetEpic(HttpExchange exchange) throws IOException {
@@ -104,15 +98,21 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         String response;
         InputStream inputStream = exchange.getRequestBody();
         String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        JsonElement jsonElement = JsonParser.parseString(body);
-        JsonObject jsonObject = jsonElement.getAsJsonObject();
-        String name = jsonObject.get("taskName").getAsString();
-        String description = jsonObject.get("taskDescription").getAsString();
-        Epic epic = new Epic(name, description);
-        taskManager.addNewEpic(epic);
-        rCode = 201;
-        response = "Задача успешно создана";
-        sendText(exchange, response, rCode);
+        if (!body.replace("{", "").replace("}", "").isBlank()) {
+            JsonElement jsonElement = JsonParser.parseString(body);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String name = jsonObject.get("taskName").getAsString();
+            String description = jsonObject.get("taskDescription").getAsString();
+            Epic epic = new Epic(name, description);
+            taskManager.addNewEpic(epic);
+            rCode = 201;
+            response = "Задача успешно создана";
+            sendText(exchange, response, rCode);
+        } else {
+            rCode = 400;
+            response = "Отправлено пустое тело запроса";
+            sendNotFound(exchange, response, rCode);
+        }
     }
 
     private void handleDeleteEpic(HttpExchange exchange) throws IOException {

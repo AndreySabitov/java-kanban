@@ -19,9 +19,6 @@ public abstract class BaseHttpHandler implements HttpHandler {
         this.taskManager = taskManager;
     }
 
-    @Override
-    public abstract void handle(HttpExchange exchange) throws IOException;
-
     protected void sendText(HttpExchange exchange, String response, int rCode) throws IOException {
         String message = "Запрос успешно обработан!\n" + response;
         try (OutputStream os = exchange.getResponseBody()) {

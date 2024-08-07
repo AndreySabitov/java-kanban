@@ -148,6 +148,22 @@ class HttpTaskServerTest {
     }
 
     @Test
+    void httpTaskServerCantAddEmptyTaskToManager() throws IOException, InterruptedException {
+        String taskJson = "{ }";
+        URI uri = URI.create("http://localhost:8080/tasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(taskJson))
+                .uri(uri)
+                .header("Accept", "application/json")
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+        HttpResponse<String> response = client.send(request, handler);
+        int code = response.statusCode();
+        assertEquals(400, code);
+    }
+
+    @Test
     void httpTaskServerReturnCode406IfAddTaskAndThisTaskIntersectionWithTasksInManager()
             throws IOException, InterruptedException {
         Task task1 = new Task("Задача 1", "Описание задачи 1", TaskStatuses.NEW,
@@ -378,6 +394,24 @@ class HttpTaskServerTest {
         assertEquals(201, code);
         assertFalse(subtasks.isEmpty());
         assertEquals(subtask1.getTaskName(), subtasks.getFirst().getTaskName());
+    }
+
+    @Test
+    void httpTaskServerCantAddSubtaskWithEmptyBody() throws IOException, InterruptedException {
+        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
+        int epic1Id = taskManager.addNewEpic(epic1);
+        String subtask1Json = "{ }";
+        URI uri = URI.create("http://localhost:8080/subtasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(subtask1Json))
+                .uri(uri)
+                .header("Accept", "application/json")
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+        HttpResponse<String> response = client.send(request, handler);
+        int code = response.statusCode();
+        assertEquals(400, code);
     }
 
     @Test

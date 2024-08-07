@@ -1,7 +1,6 @@
 package server.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import services.ManagerSaveException;
 import services.NotFoundException;
 import services.TaskManager;
@@ -10,10 +9,9 @@ import tasks.Task;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 
-public class TasksHandler extends BaseHttpHandler implements HttpHandler {
+public class TasksHandler extends BaseHttpHandler {
     public TasksHandler(TaskManager taskManager) {
         super(taskManager);
     }
@@ -43,11 +41,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void handleGetTasks(HttpExchange exchange) throws IOException {
-        int rCode = 200;
-        String response;
-        List<Task> tasksList = taskManager.getTasksList();
-        response = gson.toJson(tasksList);
-        sendText(exchange, response, rCode);
+        sendText(exchange, gson.toJson(taskManager.getTasksList()), 200);
     }
 
     private void handleGetTask(HttpExchange exchange) throws IOException {
@@ -80,6 +74,12 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
         Task task = gson.fromJson(body, Task.class);
         int id = taskManager.addNewTask(task);
         if (id == -1) {
+            if (body.replace("{", "").replace("}", "").isBlank()) {
+                rCode = 400;
+                response = "Отправлено пустое тело запроса";
+                sendNotFound(exchange, response, rCode);
+                return;
+            }
             sendInteractions(exchange);
         } else {
             rCode = 201;
@@ -98,8 +98,9 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                 taskManager.getTask(id);
                 InputStream inputStream = exchange.getRequestBody();
                 String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                Task task = gson.fromJson(body, Task.class);
-                if (task.getTaskId() != null && task.getTaskId() == id) {
+                if (!body.replace("{", "").replace("}", "").isBlank()) {
+                    Task task = gson.fromJson(body, Task.class);
+                    task.setTaskId(id);
                     try {
                         taskManager.updateTask(task);
                         rCode = 201;
@@ -110,7 +111,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                     }
                 } else {
                     rCode = 400;
-                    response = "id задачи не задан или задан некорректно";
+                    response = "Отправлено пустое тело запроса";
                     sendNotFound(exchange, response, rCode);
                 }
             } catch (NotFoundException e) {

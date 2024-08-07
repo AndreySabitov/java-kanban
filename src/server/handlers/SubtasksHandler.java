@@ -1,7 +1,6 @@
 package server.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import services.ManagerSaveException;
 import services.NotFoundException;
 import services.TaskManager;
@@ -10,10 +9,9 @@ import tasks.Subtask;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 
-public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
+public class SubtasksHandler extends BaseHttpHandler {
     public SubtasksHandler(TaskManager taskManager) {
         super(taskManager);
     }
@@ -43,11 +41,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     private void handleGetSubtasks(HttpExchange exchange) throws IOException {
-        int rCode = 200;
-        String response;
-        List<Subtask> subtasksList = taskManager.getSubtasksList();
-        response = gson.toJson(subtasksList);
-        sendText(exchange, response, rCode);
+        sendText(exchange, gson.toJson(taskManager.getSubtasksList()), 200);
     }
 
     private void handleGetSubtask(HttpExchange exchange) throws IOException {
@@ -77,20 +71,26 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
         String response;
         InputStream inputStream = exchange.getRequestBody();
         String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        Subtask subtask = gson.fromJson(body, Subtask.class);
-        try {
-            taskManager.getEpic(subtask.getIdOfEpic());
-            int id = taskManager.addNewSubtask(subtask);
-            if (id == -1) {
-                sendInteractions(exchange);
-            } else {
-                rCode = 201;
-                response = "Задача успешно создана";
-                sendText(exchange, response, rCode);
+        if (!body.replace("{", "").replace("}", "").isBlank()) {
+            Subtask subtask = gson.fromJson(body, Subtask.class);
+            try {
+                taskManager.getEpic(subtask.getIdOfEpic());
+                int id = taskManager.addNewSubtask(subtask);
+                if (id == -1) {
+                    sendInteractions(exchange);
+                } else {
+                    rCode = 201;
+                    response = "Задача успешно создана";
+                    sendText(exchange, response, rCode);
+                }
+            } catch (NotFoundException e) {
+                rCode = 404;
+                response = e.getMessage() + "невозможно добавить подзадачу без эпика";
+                sendNotFound(exchange, response, rCode);
             }
-        } catch (NotFoundException e) {
-            rCode = 404;
-            response = e.getMessage() + "невозможно добавить подзадачу без эпика";
+        } else {
+            rCode = 400;
+            response = "Отправлено пустое тело запроса";
             sendNotFound(exchange, response, rCode);
         }
     }
@@ -105,8 +105,9 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                 taskManager.getSubTask(id);
                 InputStream inputStream = exchange.getRequestBody();
                 String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                Subtask subtask = gson.fromJson(body, Subtask.class);
-                if (subtask.getTaskId() != null && subtask.getTaskId() == id) {
+                if (!body.replace("{", "").replace("}", "").isBlank()) {
+                    Subtask subtask = gson.fromJson(body, Subtask.class);
+                    subtask.setTaskId(id);
                     try {
                         taskManager.updateSubtask(subtask);
                         rCode = 201;
@@ -117,7 +118,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                     }
                 } else {
                     rCode = 400;
-                    response = "id подзадачи не задан или задан некорректно";
+                    response = "Отправлено пустое тело запроса";
                     sendNotFound(exchange, response, rCode);
                 }
             } catch (NotFoundException e) {
