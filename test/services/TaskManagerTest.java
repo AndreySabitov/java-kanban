@@ -91,7 +91,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         try {
             taskManager.updateTask(new Task(1, "Обновленная задача 2",
                     "новое описание задачи 2", TaskStatuses.IN_PROGRESS, duration, time));
-        } catch (ManagerSaveException _) {
+        } catch (ManagerSaveException e) {
         }
         assertTrue(taskManager.getTasksList().isEmpty());
     }
@@ -111,7 +111,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         try {
             taskManager.updateSubtask(new Subtask(epic1Id, 3, "обновленная подзадача 2",
                     "Новое описание подзадачи 2", TaskStatuses.NEW, duration, time));
-        } catch (ManagerSaveException _) {
+        } catch (ManagerSaveException e) {
         }
         assertTrue(taskManager.getSubtasksList().isEmpty());
     }
