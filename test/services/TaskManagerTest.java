@@ -53,8 +53,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void cantGetSubtasksOfNonExistentEpic() {
-        List<Subtask> subtasks = taskManager.getEpicSubtasks(1);
-        assertNull(subtasks);
+        assertThrows(NotFoundException.class, () -> taskManager.getEpicSubtasks(1));
     }
 
     @Test
@@ -69,19 +68,19 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void cantGetNonExistentTask() {
-        assertNull(taskManager.getTask(1));
+        assertThrows(NotFoundException.class, () -> taskManager.getTask(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
     @Test
     void cantGetNonExistentSubtask() {
-        assertNull(taskManager.getSubTask(1));
+        assertThrows(NotFoundException.class, () -> taskManager.getSubTask(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
     @Test
     void cantGetNonExistentEpic() {
-        assertNull(taskManager.getEpic(1));
+        assertThrows(NotFoundException.class, () -> taskManager.getEpic(1));
         assertTrue(taskManager.getHistory().isEmpty());
     }
 
@@ -89,15 +88,18 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void cantUpdateNonExistentTask() {
         Duration duration = Duration.ofMinutes(30);
         LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
-        taskManager.updateTask(new Task(1, "Обновленная задача 2",
-                "новое описание задачи 2", TaskStatuses.IN_PROGRESS, duration, time));
-        assertNull(taskManager.getTask(1));
+        try {
+            taskManager.updateTask(new Task(1, "Обновленная задача 2",
+                    "новое описание задачи 2", TaskStatuses.IN_PROGRESS, duration, time));
+        } catch (ManagerSaveException e) {
+        }
+        assertTrue(taskManager.getTasksList().isEmpty());
     }
 
     @Test
     void cantUpdateNonExistentEpic() {
         taskManager.updateEpic(new Epic(1, "Эпик2new", "Новое описание эпика 2"));
-        assertNull(taskManager.getEpic(1));
+        assertThrows(NotFoundException.class, () -> taskManager.getEpic(1));
     }
 
     @Test
@@ -106,9 +108,12 @@ abstract class TaskManagerTest<T extends TaskManager> {
         LocalDateTime time = LocalDateTime.of(2020, 11, 11, 16, 0);
         Epic epic1 = new Epic("Эпик 1", "Сложный эпик 1");
         int epic1Id = taskManager.addNewEpic(epic1);
-        taskManager.updateSubtask(new Subtask(epic1Id, 3, "обновленная подзадача 2",
-                "Новое описание подзадачи 2", TaskStatuses.NEW, duration, time));
-        assertNull(taskManager.getSubTask(3));
+        try {
+            taskManager.updateSubtask(new Subtask(epic1Id, 3, "обновленная подзадача 2",
+                    "Новое описание подзадачи 2", TaskStatuses.NEW, duration, time));
+        } catch (ManagerSaveException e) {
+        }
+        assertTrue(taskManager.getSubtasksList().isEmpty());
     }
 
     @Test
@@ -234,7 +239,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         Task task1 = new Task("Задача 1", "Простая задача 1", TaskStatuses.NEW, duration, time);
         int task1Id = taskManager.addNewTask(task1);
         taskManager.deleteTask(task1Id);
-        assertNull(taskManager.getTask(task1Id));
+        assertThrows(NotFoundException.class, () -> taskManager.getTask(task1Id));
     }
 
     @Test
@@ -254,8 +259,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteEpic(epic1Id);
-        assertNull(taskManager.getSubTask(subtask1Id));
-        assertNull(taskManager.getEpic(epic1Id));
+        assertThrows(NotFoundException.class, () -> taskManager.getSubTask(subtask1Id));
+        assertThrows(NotFoundException.class, () -> taskManager.getEpic(epic1Id));
     }
 
     @Test
@@ -280,7 +285,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 TaskStatuses.NEW, duration, time);
         int subtask1Id = taskManager.addNewSubtask(subtask1);
         taskManager.deleteSubtask(subtask1Id);
-        assertNull(taskManager.getSubTask(subtask1Id));
+        assertThrows(NotFoundException.class, () -> taskManager.getSubTask(subtask1Id));
         assertTrue(taskManager.getEpic(epic1Id).getSubtaskIds().isEmpty());
     }
 
@@ -562,10 +567,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         int subtask2Id = taskManager.addNewSubtask(subtask2);
         assertEquals(TaskStatuses.NEW, taskManager.getEpic(epic1Id).getStatus());
         taskManager.updateSubtask(new Subtask(epic1Id, subtask1Id, "обновленная подзадача 1",
-                "Новое описание подзадачи 1", TaskStatuses.DONE, duration, time.plus(duration)));
+                "Новое описание подзадачи 1", TaskStatuses.DONE, duration, time.plusMinutes(60)));
         assertEquals(TaskStatuses.IN_PROGRESS, taskManager.getEpic(epic1Id).getStatus());
         taskManager.updateSubtask(new Subtask(epic1Id, subtask2Id, "обновленная подзадача 2",
-                "Новое описание подзадачи 2", TaskStatuses.DONE, duration, time.plus(duration)));
+                "Новое описание подзадачи 2", TaskStatuses.DONE, duration, time.plusMinutes(90)));
         assertEquals(TaskStatuses.DONE, taskManager.getEpic(epic1Id).getStatus());
     }
 
