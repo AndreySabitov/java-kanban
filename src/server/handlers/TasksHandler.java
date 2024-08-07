@@ -71,20 +71,20 @@ public class TasksHandler extends BaseHttpHandler {
         String response;
         InputStream inputStream = exchange.getRequestBody();
         String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        Task task = gson.fromJson(body, Task.class);
-        int id = taskManager.addNewTask(task);
-        if (id == -1) {
-            if (body.replace("{", "").replace("}", "").isBlank()) {
-                rCode = 400;
-                response = "Отправлено пустое тело запроса";
-                sendNotFound(exchange, response, rCode);
-                return;
+        if (!body.replace("{", "").replace("}", "").isBlank()) {
+            Task task = gson.fromJson(body, Task.class);
+            int id = taskManager.addNewTask(task);
+            if (id == -1) {
+                sendInteractions(exchange);
+            } else {
+                rCode = 201;
+                response = "Задача успешно создана";
+                sendText(exchange, response, rCode);
             }
-            sendInteractions(exchange);
         } else {
-            rCode = 201;
-            response = "Задача успешно создана";
-            sendText(exchange, response, rCode);
+            rCode = 400;
+            response = "Отправлено пустое тело запроса";
+            sendNotFound(exchange, response, rCode);
         }
     }
 
