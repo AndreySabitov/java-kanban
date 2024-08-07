@@ -194,15 +194,4 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Path getPath() {
         return path;
     }
-
-    public static void main(String[] args) {
-        File file = new File("src\\workFile.CSV");
-        FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
-        int epic1Id = taskManager.addNewEpic(new Epic("Эпик 1", "Описание эпика 1"));
-        taskManager.addNewSubtask(new Subtask(epic1Id, "Пз1", "Опз1", TaskStatuses.IN_PROGRESS,
-                Duration.ofMinutes(30), LocalDateTime.now()));
-        taskManager.addNewSubtask(new Subtask(epic1Id, "Пз2", "Опз2", TaskStatuses.IN_PROGRESS,
-                Duration.ofMinutes(30), LocalDateTime.now().plusMinutes(60)));
-        taskManager.deleteSubtask(2);
-    }
 }

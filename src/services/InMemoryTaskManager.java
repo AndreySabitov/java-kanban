@@ -39,7 +39,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Subtask> getEpicSubtasks(int epicId) {
         if (!epics.containsKey(epicId)) {
-            return null;
+            throw new NotFoundException("Задача не найдена");
         }
         Epic epic = epics.get(epicId);
         return epic.getSubtaskIds().stream()
@@ -49,23 +49,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        Task task = tasks.get(id);
-        historyManager.add(task);
-        return task;
+        if (tasks.containsKey(id)) {
+            Task task = tasks.get(id);
+            historyManager.add(task);
+            return task;
+        } else {
+            throw new NotFoundException("Задача не найдена");
+        }
     }
 
     @Override
     public Subtask getSubTask(int id) {
-        Subtask subtask = subtasks.get(id);
-        historyManager.add(subtask);
-        return subtask;
+        if (subtasks.containsKey(id)) {
+            Subtask subtask = subtasks.get(id);
+            historyManager.add(subtask);
+            return subtask;
+        } else {
+            throw new NotFoundException("Подзадача не найдена");
+        }
     }
 
     @Override
     public Epic getEpic(int id) {
-        Epic epic = epics.get(id);
-        historyManager.add(epic);
-        return epic;
+        if (epics.containsKey(id)) {
+            Epic epic = epics.get(id);
+            historyManager.add(epic);
+            return epic;
+        } else {
+            throw new NotFoundException("Эпик не найден");
+        }
     }
 
     @Override
@@ -142,6 +154,8 @@ public class InMemoryTaskManager implements TaskManager {
             prioritizedTaskList.remove(taskToRemove);
             tasks.replace(task.getTaskId(), task);
             prioritizedTaskList.add(task);
+        } else {
+            throw new ManagerSaveException("Задача пересекается с текущими");
         }
     }
 
@@ -165,15 +179,21 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = epics.get(subtask.getIdOfEpic());
             epic.setStatus(checkStatus(epic.getSubtaskIds()));
             setTimeOfEpic(epic);
+        } else {
+            throw new ManagerSaveException("Задача пересекается с текущими или не найдена");
         }
     }
 
     @Override
     public void deleteTask(int id) {
-        Task taskToRemove = tasks.get(id);
-        prioritizedTaskList.remove(taskToRemove);
-        tasks.remove(id);
-        historyManager.remove(id);
+        if (tasks.containsKey(id)) {
+            Task taskToRemove = tasks.get(id);
+            prioritizedTaskList.remove(taskToRemove);
+            tasks.remove(id);
+            historyManager.remove(id);
+        } else {
+            throw new NotFoundException("Такой задачи нет");
+        }
     }
 
     @Override
@@ -189,6 +209,8 @@ public class InMemoryTaskManager implements TaskManager {
                     });
             epics.remove(id);
             historyManager.remove(id);
+        } else {
+            throw new NotFoundException("Эпик с таким id не найден");
         }
     }
 
@@ -205,6 +227,8 @@ public class InMemoryTaskManager implements TaskManager {
             setTimeOfEpic(epic);
             subtasks.remove(id);
             historyManager.remove(id);
+        } else {
+            throw new NotFoundException("Такой подзадачи нет");
         }
     }
 
@@ -282,7 +306,9 @@ public class InMemoryTaskManager implements TaskManager {
                     .noneMatch(task1 -> (task.getStartTime().isAfter(task1.getStartTime()) &&
                             task.getStartTime().isBefore(task1.getEndTime())) ||
                             (task.getEndTime().isAfter(task1.getStartTime()) &&
-                                    task.getEndTime().isBefore(task1.getEndTime())));
+                                    task.getEndTime().isBefore(task1.getEndTime())) ||
+                            task.getStartTime().equals(task1.getStartTime()) ||
+                            task.getEndTime().equals(task1.getEndTime()));
         } else {
             return false;
         }
